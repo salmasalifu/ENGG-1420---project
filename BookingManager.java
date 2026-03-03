@@ -14,9 +14,9 @@ public class BookingManager {
      */
     private int getMaxBookings(String userType) {
         switch (userType.toLowerCase()) {
-            case "student": return 3; // [cite: 64]
-            case "staff": return 5;   // [cite: 65]
-            case "guest": return 1;   // [cite: 66]
+            case "student": return 3; 
+            case "staff": return 5;   // 
+            case "guest": return 1;   // [
             default: return 0;
         }
     }
@@ -89,4 +89,5 @@ public class BookingManager {
             nextInLine.setStatus(BookingStatus.CONFIRMED);
         }
     }
+
 }
