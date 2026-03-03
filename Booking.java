@@ -3,11 +3,11 @@ package model;
 import java.time.LocalDateTime;
 
 public class Booking {
-    private String bookingId;   // Unique ID [cite: 51]
-    private String userId;      // ID of the User [cite: 52]
-    private String eventId;     // ID of the Event [cite: 53]
-    private LocalDateTime createdAt; // Timestamp for waitlist order [cite: 54, 160]
-    private BookingStatus status;    // Confirmed, Waitlisted, or Cancelled [cite: 55]
+    private String bookingId;   // Unique ID 
+    private String userId;      // ID of the User 
+    private String eventId;     // ID of the Event 
+    private LocalDateTime createdAt; // Timestamp for waitlist order
+    private BookingStatus status;    // Confirmed, Waitlisted, or Cancelled 
 
     public Booking(String bookingId, String userId, String eventId, BookingStatus status) {
         this.bookingId = bookingId;
@@ -27,4 +27,5 @@ public class Booking {
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
+
 }
