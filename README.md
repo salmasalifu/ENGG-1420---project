@@ -14,7 +14,7 @@ Functionallity
 
 Compile and Run
     Clone onto IntelliJ IDEA
--      Must hace JDK
+-      Must have JDK
 - open Main.Java
 - Click Run
 - GUI should appear
