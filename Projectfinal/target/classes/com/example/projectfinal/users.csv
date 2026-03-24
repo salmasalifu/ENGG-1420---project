@@ -1,0 +1,25 @@
+userId,name,email,userType
+U001,Alice Smith,alice.smith@uoguelph.ca,Student
+U002,Bob Chen,bob.chen@uoguelph.ca,Student
+U003,Clara Diaz,clara.diaz@uoguelph.ca,Student
+U004,Daniel Kim,daniel.kim@uoguelph.ca,Student
+U005,Ella Brown,ella.brown@uoguelph.ca,Student
+U006,Farhad Rahimi,farhad.rahimi@uoguelph.ca,Student
+U007,Grace Wilson,grace.wilson@uoguelph.ca,Student
+U008,Hassan Noor,hassan.noor@uoguelph.ca,Student
+U009,Ivy Patel,ivy.patel@uoguelph.ca,Student
+U010,Jason Li,jason.li@uoguelph.ca,Student
+U011,Karen Taylor,karen.taylor@uoguelph.ca,Staff
+U012,Leo Martin,leo.martin@uoguelph.ca,Staff
+U013,Mina Zarei,mina.zarei@uoguelph.ca,Staff
+U014,Nora Hughes,nora.hughes@uoguelph.ca,Staff
+U015,Omid Karimi,omid.karimi@uoguelph.ca,Staff
+U016,Priya Nair,priya.nair@uoguelph.ca,Staff
+U017,Quinn Adams,quinn.adams@gmail.com,Guest
+U018,Rosa Evans,rosa.evans@gmail.com,Guest
+U019,Sam Foster,sam.foster@gmail.com,Guest
+U020,Tina Green,tina.green@gmail.com,Guest
+U021,Uma Roy,uma.roy@uoguelph.ca,Student
+U022,Victor Scott,victor.scott@uoguelph.ca,Student
+U023,Wendy Zhao,wendy.zhao@uoguelph.ca,Staff
+U024,Yara Mohammadi,yara.mohammadi@gmail.com,Guest
