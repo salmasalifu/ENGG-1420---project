@@ -239,8 +239,10 @@ public class MainController {
     private void handleRemoveFromRoster() {
         Booking selected = rosterTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            bookingManager.getAllBookings().remove(selected);
-            rosterData.remove(selected);
+            //call cancel booking to promote earliest waitlisted booking
+            bookingManager.cancelBooking(selected.getBookingId());
+            handleViewRoster(); //refresh roster table
+            refreshUserBookings(selected.getUserId()); //refresh the user booking table
         }
     }
 
