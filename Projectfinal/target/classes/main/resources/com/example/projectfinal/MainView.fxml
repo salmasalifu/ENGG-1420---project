@@ -80,6 +80,7 @@
                   <Text layoutX="386.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Capcity Input" />
                   <Text layoutX="536.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Event Type" />
                   <Text layoutX="681.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Extra Info" />
+                  <Button fx:id="updateEventBtn" layoutX="577.0" layoutY="357.0" mnemonicParsing="false" text="Update Event" />
                     </children></AnchorPane>
             </content>
         </Tab>
@@ -95,12 +96,12 @@
                   <TextField fx:id="bookingUserIdInput" layoutX="141.0" layoutY="381.0" />
                   <TextField fx:id="bookingEventIdInput" layoutX="600.0" layoutY="381.0" />
                   <Button fx:id="bookEventBtn" layoutX="407.0" layoutY="447.0" mnemonicParsing="false" text="Book Event" />
-                  <Label fx:id="bookingMessageLabel" layoutX="367.0" layoutY="334.0" prefHeight="71.0" prefWidth="185.0" text="Label">
+                  <Label fx:id="bookingMessageLabel" layoutX="180.0" layoutY="472.0" prefHeight="71.0" prefWidth="539.0" text="Label">
                      <font>
-                        <Font size="36.0" />
+                        <Font size="20.0" />
                      </font>
                   </Label>
-                  <TableView fx:id="userBookingsTable" layoutX="345.0" layoutY="25.0" prefHeight="200.0" prefWidth="301.0">
+                  <TableView fx:id="userBookingsTable" layoutX="299.0" layoutY="27.0" prefHeight="200.0" prefWidth="301.0">
                     <columns>
                       <TableColumn fx:id="bookingEventIdColumn" prefWidth="75.0" text="Event ID" />
                       <TableColumn fx:id="bookingEventTitleColumn" prefWidth="132.66665649414062" text="Title" />
@@ -109,6 +110,7 @@
                   </TableView>
                   <Text layoutX="193.0" layoutY="452.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input User ID" />
                   <Text layoutX="652.0" layoutY="435.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Event Id" />
+                  <Button fx:id="viewUserBookingsBtn" layoutX="403.0" layoutY="393.0" mnemonicParsing="false" text="View Bookings" />
                     </children></AnchorPane>
             </content>
         </Tab>
@@ -132,6 +134,7 @@
                     </columns>
                   </TableView>
                   <Button fx:id="removeRosterBtn" layoutX="397.0" layoutY="468.0" mnemonicParsing="false" text="Remove from Roster" />
+                  <Label fx:id="waitlistMessageLabel" layoutX="445.0" layoutY="516.0" text="Label" />
                     </children></AnchorPane>
             </content>
         </Tab>

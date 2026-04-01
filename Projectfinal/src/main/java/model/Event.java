@@ -32,10 +32,11 @@ public abstract class Event {
     public int getCapacity() { return capacity; }
     public EventStatus getStatus() { return status; }
 
-    // [ADDED: Method to allow DataManager to set status from CSV]
-    public void setStatus(EventStatus status) {
-        this.status = status;
-    }
+    // --- Added Setters for editing the event later ---
+    public void setTitle(String title) { this.title = title; }
+    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
+    public void setLocation(String location) { this.location = location; }
+    public void setStatus(EventStatus status) { this.status = status; }
 
     //update info
     public void cancelEvent() {
@@ -49,11 +50,7 @@ public abstract class Event {
     }
 
     //event type
-    // [MODIFIED: Renamed with 'get' prefix for TableView compatibility]
-    public abstract String getEventtype();
-
-    // [MODIFIED: Renamed with 'get' prefix for TableView compatibility]
+    public abstract String getEventtype(); //event type
     public abstract String getExtrainfo();
-
     public abstract void updateExtrainfo(String newInfo);
 }

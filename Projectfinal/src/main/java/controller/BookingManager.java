@@ -4,6 +4,7 @@ import model.Booking;
 import model.BookingStatus;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class BookingManager {
@@ -13,13 +14,17 @@ public class BookingManager {
         return allBookings;
     }
 
+    // Checks if a user is already actively booked for a specific event
+    public boolean isUserAlreadyBooked(String userId, String eventId) {
+        return allBookings.stream()
+                .anyMatch(b -> b.getUserId().equals(userId) &&
+                        b.getEventId().equals(eventId) &&
+                        b.getStatus() != BookingStatus.CANCELLED);
+    }
+
+    // Creates the booking and decides if they get a seat or hit the waitlist
     public String createBooking(String bookingId, String userId, String userName, String userType, String eventId, String eventTitle, int currentConfirmedCount, int maxCapacity) {
-        BookingStatus initialStatus;
-        if (currentConfirmedCount < maxCapacity) {
-            initialStatus = BookingStatus.CONFIRMED;
-        } else {
-            initialStatus = BookingStatus.WAITLISTED;
-        }
+        BookingStatus initialStatus = (currentConfirmedCount < maxCapacity) ? BookingStatus.CONFIRMED : BookingStatus.WAITLISTED;
 
         Booking newBooking = new Booking(bookingId, userId, userName, eventId, eventTitle, initialStatus);
         allBookings.add(newBooking);
@@ -27,48 +32,48 @@ public class BookingManager {
         return "Booking " + bookingId + " created as: " + initialStatus;
     }
 
-    public void cancelBooking(String bookingId) {
-        Booking cancelledBooking = null; //store's booking we want to cancel
-        for (Booking booking : allBookings) { //loop through all bookings
-            if (booking.getBookingId().equals(bookingId)) { //if selected booking matches the lists booking
-                cancelledBooking = booking;
-                break;
+    // Cancels a booking and automatically triggers the waitlist if a seat opens up
+    public String cancelBooking(String bookingId) {
+        Booking target = allBookings.stream().filter(b -> b.getBookingId().equals(bookingId)).findFirst().orElse(null);
+
+        if (target != null) {
+            boolean wasConfirmed = target.getStatus() == BookingStatus.CONFIRMED;
+            target.setStatus(BookingStatus.CANCELLED);
+
+            // If they had a confirmed seat, give it to the next person!
+            if (wasConfirmed) {
+                return promoteNextOnWaitlist(target.getEventId());
             }
         }
-
-        if (cancelledBooking == null) { //if we never found booking with that ID
-            return;
-        }
-
-        //check if the booking was already confirmed before cancelling it
-        boolean wasConfirmed = cancelledBooking.getStatus() == BookingStatus.CONFIRMED;
-        cancelledBooking.setStatus(BookingStatus.CANCELLED);
-
-        if (!wasConfirmed) { //if the booking wasn't confirmed yet
-            return; //stop the cancelling
-        }
-
-        //get the eventID for this booking
-        String eventId = cancelledBooking.getEventId();
-        Booking firstWaitListed = null; //stores earliest waitlisted booking
-
-
-        for (Booking booking : allBookings) { //loop through all bookings
-            //check for same event ID, as well as if bookings waitlisted
-            if (booking.getEventId().equals(eventId) && booking.getStatus() == BookingStatus.WAITLISTED) {
-                //if we haven't picked anyone yet or this booking was created earlier than the one we already picked
-                if (firstWaitListed == null || booking.getCreatedAt().isBefore(firstWaitListed.getCreatedAt())) {
-                    firstWaitListed = booking; //update to earliest waitlisted booking
-                }
-            }
-        }
-
-        if (firstWaitListed != null) { //if we found someone on waitlist
-            firstWaitListed.setStatus(BookingStatus.CONFIRMED); //promote them
-        }
+        return "Booking cancelled successfully.";
     }
 
-    public void removeBooking(String bookingId) {
-        allBookings.removeIf(b -> b.getBookingId().equals(bookingId));
+    // Completely deletes a booking from the system (like when an admin kicks someone out)
+    public String removeBooking(String bookingId) {
+        Booking target = allBookings.stream().filter(b -> b.getBookingId().equals(bookingId)).findFirst().orElse(null);
+
+        if (target != null) {
+            boolean wasConfirmed = target.getStatus() == BookingStatus.CONFIRMED;
+            allBookings.remove(target);
+
+            if (wasConfirmed) {
+                return promoteNextOnWaitlist(target.getEventId());
+            }
+        }
+        return "Booking removed successfully.";
+    }
+
+    // The Auto-Promoter: Finds the oldest waitlisted person and bumps them up
+    public String promoteNextOnWaitlist(String eventId) {
+        Booking promotedBooking = allBookings.stream()
+                .filter(b -> b.getEventId().equals(eventId) && b.getStatus() == BookingStatus.WAITLISTED)
+                .min(Comparator.comparing(Booking::getCreatedAt)) // Finds the earliest timestamp
+                .orElse(null);
+
+        if (promotedBooking != null) {
+            promotedBooking.setStatus(BookingStatus.CONFIRMED);
+            return "🔔 Notification: " + promotedBooking.getUserName() + " was auto-promoted to CONFIRMED!";
+        }
+        return "Seat freed. No one was on the waitlist to promote.";
     }
 }
