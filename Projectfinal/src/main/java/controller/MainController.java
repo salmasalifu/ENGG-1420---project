@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 
 public class MainController {
 
-    // --- Backend Managers ---
+    // These managers handle the core data processing for users and bookings.
     private UserManagement userManager = new UserManagement();
     private BookingManager bookingManager = new BookingManager();
 
-    // --- Data Lists ---
+    // These lists keep the UI tables updated in real-time as data changes.
     private ObservableList<Event> eventData = FXCollections.observableArrayList();
     private ObservableList<User> userData = FXCollections.observableArrayList();
     private ObservableList<Booking> userBookingsData = FXCollections.observableArrayList();
@@ -61,21 +61,20 @@ public class MainController {
     @FXML private TableColumn<Booking, String> rosterUserIdColumn, rosterUserNameColumn, rosterStatusColumn;
     @FXML private TableColumn<Booking, LocalDateTime> rosterTimeColumn;
     @FXML private Button viewRosterBtn, removeRosterBtn, promoteBtn, demoteBtn;
-    @FXML private Label waitlistMessageLabel; // NEW: Dedicated label for Tab 4 notifications
+    @FXML private Label waitlistMessageLabel;
 
     @FXML
     public void initialize() {
-        // Load up our dropdown choices
+        // Populates the dropdown menus with valid categories.
         userTypeDropdown.setItems(FXCollections.observableArrayList("Student", "Staff", "Guest"));
         eventTypeDropdown.setItems(FXCollections.observableArrayList("Workshop", "Seminar", "Concert"));
 
-        // Map User Table Columns
+        // Links the table columns to the specific variables in our model classes.
         userIdColumn.setCellValueFactory(new PropertyValueFactory<>("userId"));
         userNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         userEmailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         userTypeColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
 
-        // Map Event Table Columns
         idColumn.setCellValueFactory(new PropertyValueFactory<>("ID"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateTime"));
@@ -85,22 +84,20 @@ public class MainController {
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("eventtype"));
         extraInfoColumn.setCellValueFactory(new PropertyValueFactory<>("extrainfo"));
 
-        // Map Booking Table Columns
         bookingEventIdColumn.setCellValueFactory(new PropertyValueFactory<>("eventId"));
         bookingEventTitleColumn.setCellValueFactory(new PropertyValueFactory<>("eventTitle"));
         bookingStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Map Waitlist/Roster Table Columns
         rosterUserIdColumn.setCellValueFactory(new PropertyValueFactory<>("userId"));
         rosterUserNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
         rosterStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         rosterTimeColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
 
-        // Fire up the data manager to read the CSVs
+        // Pulls in the starting data from the CSV files.
         DataManager.loadInitialData(userManager, eventData, bookingManager);
         userData.setAll(userManager.getAllUsers());
 
-        // Connect our data lists to the visual tables
+        // Attaches our data lists to the actual UI components.
         userTable.setItems(userData);
         eventTable.setItems(eventData);
         userBookingsTable.setItems(userBookingsData);
@@ -108,11 +105,11 @@ public class MainController {
 
         updateRosterDropdown();
 
-        // Listener: When a user clicks an event, auto-fill the text boxes so they can edit it
+        // This listener detects when an event is clicked and fills the text fields for easy editing.
         eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 eventIdInput.setText(newSelection.getID());
-                eventIdInput.setDisable(true); // Lock the ID so it can't be messed with
+                eventIdInput.setDisable(true); // Lock ID: You can't change the ID of an existing event
 
                 eventTitleInput.setText(newSelection.getTitle());
                 eventDateInput.setText(newSelection.getDateTime().toString());
@@ -120,13 +117,13 @@ public class MainController {
                 eventCapacityInput.setText(String.valueOf(newSelection.getCapacity()));
 
                 eventTypeDropdown.setValue(newSelection.getEventtype());
-                eventTypeDropdown.setDisable(true); // Lock the Type
+                eventTypeDropdown.setDisable(true); // Lock Type: Changing type requires a new object
 
                 eventExtraInfoInput.setText(newSelection.getExtrainfo());
             }
         });
 
-        // Wire all the buttons! (The null checks prevent crashes if a button is missing in Scene Builder)
+        // Configures what happens when each button is clicked.
         addUserBtn.setOnAction(e -> handleAddUser());
         if (removeUserBtn != null) removeUserBtn.setOnAction(e -> handleRemoveUser());
 
@@ -146,6 +143,8 @@ public class MainController {
     // ==========================================
     // USER LOGIC
     // ==========================================
+
+    // Creates a new user and refreshes the table to show them immediately.
     private void handleAddUser() {
         String id = userIdInput.getText().trim();
         String name = userNameInput.getText().trim();
@@ -155,28 +154,28 @@ public class MainController {
         if (id.isEmpty() || name.isEmpty() || type == null) return;
 
         if (userManager.createUser(id, name, email, type)) {
-            userData.setAll(userManager.getAllUsers()); // Refresh UI
+            userData.setAll(userManager.getAllUsers());
             userIdInput.clear(); userNameInput.clear(); userEmailInput.clear();
             userTypeDropdown.setValue(null);
         }
     }
 
+    // Completely removes a user and automatically fills any event seats they were holding.
     private void handleRemoveUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            // Find events they are abandoning so we can promote the waitlist
-            List<String> eventsToPromote = bookingManager.getAllBookings().stream()
+            // Find seats they are giving up so we can promote the waitlist
+            List<String> affectedEvents = bookingManager.getAllBookings().stream()
                     .filter(b -> b.getUserId().equals(selected.getUserId()) && b.getStatus() == BookingStatus.CONFIRMED)
                     .map(Booking::getEventId)
                     .collect(Collectors.toList());
 
-            // Scrub them from the system
             bookingManager.getAllBookings().removeIf(b -> b.getUserId().equals(selected.getUserId()));
             userManager.removeUser(selected.getUserId());
             userData.remove(selected);
 
-            // Auto-promote people into the empty seats they just left behind!
-            eventsToPromote.forEach(eId -> bookingManager.promoteNextOnWaitlist(eId));
+            // Auto-promote the next people in line
+            affectedEvents.forEach(eId -> bookingManager.promoteNextOnWaitlist(eId));
 
             rosterData.clear();
             userBookingsData.clear();
@@ -186,6 +185,8 @@ public class MainController {
     // ==========================================
     // EVENT LOGIC
     // ==========================================
+
+    // Handles creating a new event and ensures the ID isn't already in use.
     private void handleAddEvent() {
         try {
             String id = eventIdInput.getText().trim();
@@ -194,9 +195,9 @@ public class MainController {
 
             if (id.isEmpty() || type == null || eventDateInput.getText().isEmpty()) return;
 
-            // Stop duplicate event IDs from breaking the system
+            // Check for duplicate IDs before creating
             if (eventData.stream().anyMatch(e -> e.getID().equalsIgnoreCase(id))) {
-                System.out.println("Error: An Event with this ID already exists!");
+                System.out.println("Error: That Event ID is already taken.");
                 return;
             }
 
@@ -216,42 +217,45 @@ public class MainController {
                 clearEventInputs();
             }
         } catch (Exception e) {
-            System.out.println("Validation Error: Check Date format or Capacity.");
+            System.out.println("Formatting error: Ensure the date is YYYY-MM-DDTHH:MM and capacity is a number.");
         }
     }
 
+    // Updates the details of an existing event and refreshes the display.
     private void handleUpdateEvent() {
         Event selected = eventTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
         try {
-            // Overwrite the old info with whatever is currently in the text boxes
+            // Modify the existing object using the Setters we added to Event.java
             selected.setTitle(eventTitleInput.getText().trim());
             selected.setDateTime(LocalDateTime.parse(eventDateInput.getText().trim()));
             selected.setLocation(eventLocationInput.getText().trim());
             selected.updateCapacity(Integer.parseInt(eventCapacityInput.getText().trim()));
             selected.updateExtrainfo(eventExtraInfoInput.getText().trim());
 
-            eventTable.refresh();
+            eventTable.refresh(); // Tell JavaFX to redraw the table with new info
             clearEventInputs();
         } catch (Exception e) {
-            System.out.println("Validation Error: Ensure Date and Capacity are formatted correctly.");
+            System.out.println("Update failed: Check your date and capacity formats.");
         }
     }
 
+    // Resets the input fields so the user can start a fresh entry.
     private void clearEventInputs() {
         eventIdInput.clear(); eventTitleInput.clear(); eventDateInput.clear();
         eventLocationInput.clear(); eventCapacityInput.clear(); eventExtraInfoInput.clear();
-        eventIdInput.setDisable(false); // Unlock for next time
-        eventTypeDropdown.setDisable(false); // Unlock for next time
+        eventIdInput.setDisable(false); // Unlock for new additions
+        eventTypeDropdown.setDisable(false);
         eventTable.getSelectionModel().clearSelection();
     }
 
+    // Marks an event as cancelled and updates all associated bookings.
     private void handleCancelEvent() {
         Event selected = eventTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             selected.cancelEvent();
-            // Cascade: If the event dies, all bookings die with it
+            // All bookings for this event also become cancelled
             bookingManager.getAllBookings().stream()
                     .filter(b -> b.getEventId().equals(selected.getID()))
                     .forEach(b -> b.setStatus(BookingStatus.CANCELLED));
@@ -263,6 +267,8 @@ public class MainController {
     // ==========================================
     // BOOKING LOGIC
     // ==========================================
+
+    // Processes a new booking request while enforcing limits and checking event status.
     private void handleBookEvent() {
         String uId = bookingUserIdInput.getText().trim();
         String eId = bookingEventIdInput.getText().trim();
@@ -272,15 +278,21 @@ public class MainController {
 
         if (u != null && e != null) {
 
-            // Cannot book dead events
+            // Blocks booking if the event has been officially cancelled.
             if (e.getStatus() == EventStatus.Cancelled) {
-                if (bookingMessageLabel != null) bookingMessageLabel.setText("Error: Cannot book a cancelled event.");
+                bookingMessageLabel.setText("Error: You cannot book a ticket for a cancelled event.");
                 return;
             }
 
-            // Cannot book the same person twice for the same event
+            // Blocks duplicate entries for the same person and event.
             if (bookingManager.isUserAlreadyBooked(uId, eId)) {
-                if (bookingMessageLabel != null) bookingMessageLabel.setText("Error: User is already booked for this event.");
+                bookingMessageLabel.setText("Error: This user is already registered for this event.");
+                return;
+            }
+
+            // Checks the user's rank (Guest, Student, Staff) to ensure they haven't hit their ticket limit.
+            if (bookingManager.hasReachedBookingLimit(uId, u.getUserType())) {
+                bookingMessageLabel.setText("Error: The maximum booking limit for a " + u.getUserType() + " has been reached.");
                 return;
             }
 
@@ -288,39 +300,37 @@ public class MainController {
                     .filter(b -> b.getEventId().equals(eId) && b.getStatus() == BookingStatus.CONFIRMED)
                     .count();
 
-            String newBookingId = "B" + (bookingManager.getAllBookings().size() + 1);
+            String bookingId = "B" + (bookingManager.getAllBookings().size() + 1);
             String result = bookingManager.createBooking(
-                    newBookingId, uId, u.getName(), u.getUserType(), eId, e.getTitle(), confirmedCount, e.getCapacity()
+                    bookingId, uId, u.getName(), u.getUserType(), eId, e.getTitle(), confirmedCount, e.getCapacity()
             );
 
-            if (bookingMessageLabel != null) bookingMessageLabel.setText(result);
+            bookingMessageLabel.setText(result);
             refreshUserBookings(uId);
             handleViewRoster();
 
             bookingUserIdInput.clear(); bookingEventIdInput.clear();
         } else {
-            if (bookingMessageLabel != null) bookingMessageLabel.setText("Error: User ID or Event ID not found.");
+            bookingMessageLabel.setText("Error: Please verify that both the User ID and Event ID are correct.");
         }
     }
 
+    // Shows the booking history for a specific user on Tab 3.
     private void handleViewUserBookings() {
         String uId = bookingUserIdInput.getText().trim();
-        if (uId.isEmpty()) {
-            if (bookingMessageLabel != null) bookingMessageLabel.setText("Please enter a User ID to search.");
-            return;
-        }
+        if (uId.isEmpty()) return;
 
         User u = userManager.getUser(uId);
         if (u != null) {
             refreshUserBookings(uId);
-            if (bookingMessageLabel != null) bookingMessageLabel.setText("Showing bookings for: " + u.getName());
-            bookingEventIdInput.clear();
+            bookingMessageLabel.setText("Viewing history for " + u.getName());
         } else {
-            if (bookingMessageLabel != null) bookingMessageLabel.setText("Error: User ID not found.");
+            bookingMessageLabel.setText("Error: User not found.");
             userBookingsData.clear();
         }
     }
 
+    // Refreshes the personal booking history for a specific user.
     private void refreshUserBookings(String userId) {
         userBookingsData.setAll(bookingManager.getAllBookings().stream()
                 .filter(b -> b.getUserId().equals(userId))
@@ -330,6 +340,8 @@ public class MainController {
     // ==========================================
     // WAITLIST & ROSTER LOGIC
     // ==========================================
+
+    // Displays the full list of people signed up for the event chosen in the dropdown.
     private void handleViewRoster() {
         String eId = rosterEventSelect.getValue();
         if (eId != null) {
@@ -339,16 +351,18 @@ public class MainController {
         }
     }
 
+    // Removes a user from an event and provides a message that includes their name.
     private void handleRemoveFromRoster() {
         Booking selected = rosterTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            // Remove them and grab the notification string if someone was promoted
-            String notification = bookingManager.removeBooking(selected.getBookingId());
-            if (waitlistMessageLabel != null) waitlistMessageLabel.setText(notification); // Display to UI
+            // Remove the booking and show notification if a waitlist promotion occurred
+            String result = bookingManager.removeBooking(selected.getBookingId());
+            if (waitlistMessageLabel != null) waitlistMessageLabel.setText(result);
             handleViewRoster();
         }
     }
 
+    // Promotes a waitlisted user to confirmed status manually.
     private void handlePromoteUser() {
         Booking selected = rosterTable.getSelectionModel().getSelectedItem();
         if (selected != null && selected.getStatus() == BookingStatus.WAITLISTED) {
@@ -358,20 +372,21 @@ public class MainController {
         }
     }
 
+    // Moves a confirmed user to the waitlist and triggers a promotion for the next person in line.
     private void handleDemoteUser() {
         Booking selected = rosterTable.getSelectionModel().getSelectedItem();
         if (selected != null && selected.getStatus() == BookingStatus.CONFIRMED) {
             selected.setStatus(BookingStatus.WAITLISTED);
-
-            // Since they lost their seat, auto-promote the next person and grab the notification
-            String notification = bookingManager.promoteNextOnWaitlist(selected.getEventId());
-            if (waitlistMessageLabel != null) waitlistMessageLabel.setText(notification); // Display to UI
+            // Promote next in line and show notification
+            String result = bookingManager.promoteNextOnWaitlist(selected.getEventId());
+            if (waitlistMessageLabel != null) waitlistMessageLabel.setText(result);
 
             rosterTable.refresh();
             refreshUserBookings(selected.getUserId());
         }
     }
 
+    // Updates the roster dropdown menu whenever events are added or removed.
     private void updateRosterDropdown() {
         rosterEventSelect.setItems(FXCollections.observableArrayList(
                 eventData.stream().map(Event::getID).collect(Collectors.toList())
