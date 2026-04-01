@@ -18,28 +18,39 @@
             <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                     <children>
-                        <Label layoutX="315.0" layoutY="265.0" text="User Management Area">
+                        <Label layoutX="11.0" layoutY="14.0" text="User Management">
                             <font>
                                 <Font name="System Bold" size="24.0" />
                             </font>
                         </Label>
-                  <TableView fx:id="userTable" layoutX="302.0" layoutY="56.0" prefHeight="200.0" prefWidth="335.0">
+                  <TableView fx:id="userTable" layoutX="42.0" layoutY="73.0" prefHeight="215.0" prefWidth="453.0">
                     <columns>
-                      <TableColumn fx:id="userIdColumn" prefWidth="60.0" text="ID Column" />
-                      <TableColumn fx:id="userNameColumn" prefWidth="100.6666259765625" text="Name Column" />
-                        <TableColumn fx:id="userEmailColumn" prefWidth="120.00003051757812" text="Email Column" />
-                        <TableColumn fx:id="userTypeColumn" prefWidth="53.33331298828125" text="Type Column" />
+                      <TableColumn fx:id="userIdColumn" prefWidth="99.0" text="ID " />
+                      <TableColumn fx:id="userNameColumn" prefWidth="127.0" text="Name " />
+                        <TableColumn fx:id="userEmailColumn" prefWidth="104.0" text="Email " />
+                        <TableColumn fx:id="userTypeColumn" prefWidth="122.0" text="User " />
                     </columns>
                   </TableView>
-                  <TextField fx:id="userIdInput" layoutX="193.0" layoutY="369.0" />
-                  <TextField fx:id="userNameInput" layoutX="396.0" layoutY="369.0" />
-                  <TextField fx:id="userEmailInput" layoutX="593.0" layoutY="369.0" />
-                  <ComboBox fx:id="userTypeDropdown" layoutX="396.0" layoutY="442.0" prefWidth="150.0" />
+                  <TextField fx:id="userIdInput" layoutX="62.0" layoutY="367.0" />
+                  <TextField fx:id="userNameInput" layoutX="266.0" layoutY="367.0" />
+                  <TextField fx:id="userEmailInput" layoutX="463.0" layoutY="367.0" />
+                  <ComboBox fx:id="userTypeDropdown" layoutX="642.0" layoutY="367.0" prefWidth="150.0" promptText="User Type" />
                   <Button fx:id="addUserBtn" layoutX="324.0" layoutY="494.0" mnemonicParsing="false" text="Add User" />
                   <Button fx:id="removeUserBtn" layoutX="556.0" layoutY="494.0" mnemonicParsing="false" text="Remove User" />
-                  <Text layoutX="245.0" layoutY="431.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input ID" />
-                  <Text layoutX="450.0" layoutY="422.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Name" />
-                  <Text layoutX="657.0" layoutY="440.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Email" />
+                  <Text layoutX="115.0" layoutY="419.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input ID" />
+                  <Text layoutX="309.0" layoutY="419.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Name" />
+                  <Text layoutX="508.0" layoutY="419.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Email" />
+                  <Text layoutX="570.0" layoutY="61.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Select a User to view bookings" wrappingWidth="209.01953125">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </Text>
+                  <TableView fx:id="userViewBookingsTable" layoutX="552.0" layoutY="79.0" prefHeight="209.0" prefWidth="245.0">
+                    <columns>
+                      <TableColumn fx:id="userEventidColumn" prefWidth="123.0" text="Event ID" />
+                        <TableColumn fx:id="userBookingStatusColumn" prefWidth="121.0" text="Booking Status" />
+                    </columns>
+                  </TableView>
                     </children></AnchorPane>
             </content>
         </Tab>
@@ -47,40 +58,46 @@
             <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                     <children>
-                        <Label layoutX="294.0" layoutY="482.0" text="Event Management Area">
+                        <Label layoutX="22.0" layoutY="14.0" text="Event Management Area">
                             <font>
                                 <Font name="System Bold" size="24.0" />
                             </font>
                         </Label>
-                  <TableView fx:id="eventTable" layoutX="64.0" layoutY="56.0" prefHeight="200.0" prefWidth="768.0">
+                  <TableView fx:id="eventTable" layoutX="21.0" layoutY="49.0" prefHeight="200.0" prefWidth="710.0">
                     <columns>
-                      <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
-                      <TableColumn fx:id="titleColumn" prefWidth="109.33331298828125" text="Title" />
-                        <TableColumn fx:id="dateColumn" prefWidth="119.33329772949219" text="Date/Time" />
-                        <TableColumn fx:id="locationColumn" prefWidth="83.99993896484375" text="Location" />
-                        <TableColumn fx:id="capacityColumn" prefWidth="32.0" text="Capacity" />
-                        <TableColumn fx:id="statusColumn" prefWidth="72.00003051757812" text="Status" />
-                        <TableColumn fx:id="typeColumn" prefWidth="92.66668701171875" text="Event Type" />
-                        <TableColumn fx:id="extraInfoColumn" prefWidth="188.0" text="Extra Info" />
+                      <TableColumn fx:id="idColumn" prefWidth="67.0" text="ID" />
+                      <TableColumn fx:id="titleColumn" prefWidth="105.0" text="Title" />
+                        <TableColumn fx:id="dateColumn" prefWidth="108.0" text="Date/Time" />
+                        <TableColumn fx:id="locationColumn" prefWidth="76.0" text="Location" />
+                        <TableColumn fx:id="capacityColumn" prefWidth="65.0" text="Capacity" />
+                        <TableColumn fx:id="statusColumn" prefWidth="67.0" text="Status" />
+                        <TableColumn fx:id="typeColumn" prefWidth="85.0" text="Event Type" />
+                        <TableColumn fx:id="extraInfoColumn" prefWidth="136.0" text="Extra Info" />
                     </columns>
                   </TableView>
-                  <TextField fx:id="eventIdInput" layoutX="64.0" layoutY="272.0" prefHeight="25.0" prefWidth="66.0" />
-                  <TextField fx:id="eventTitleInput" layoutX="141.0" layoutY="272.0" prefHeight="25.0" prefWidth="61.0" />
-                  <TextField fx:id="eventDateInput" layoutX="214.0" layoutY="272.0" prefHeight="25.0" prefWidth="69.0" />
-                  <TextField fx:id="eventLocationInput" layoutX="296.0" layoutY="272.0" prefHeight="25.0" prefWidth="68.0" />
-                  <TextField fx:id="eventCapacityInput" layoutX="373.0" layoutY="271.0" prefHeight="25.0" prefWidth="69.0" />
-                  <ComboBox fx:id="eventTypeDropdown" layoutX="522.0" layoutY="272.0" prefHeight="25.0" prefWidth="86.0" />
-                  <TextField fx:id="eventExtraInfoInput" layoutX="621.0" layoutY="272.0" />
-                  <Button fx:id="addEventBtn" layoutX="225.0" layoutY="357.0" mnemonicParsing="false" text="Add Event" />
-                  <Button fx:id="cancelEventBtn" layoutX="392.0" layoutY="357.0" mnemonicParsing="false" text="Cancel Event" />
-                  <Text layoutX="74.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ID Input" />
-                  <Text layoutX="145.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Title Input" />
-                  <Text layoutX="220.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Date Input" />
-                  <Text layoutX="296.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Location Input" />
-                  <Text layoutX="386.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Capcity Input" />
-                  <Text layoutX="536.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Event Type" />
-                  <Text layoutX="681.0" layoutY="319.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Extra Info" />
-                  <Button fx:id="updateEventBtn" layoutX="577.0" layoutY="357.0" mnemonicParsing="false" text="Update Event" />
+                  <TextField fx:id="eventIdInput" layoutX="23.0" layoutY="270.0" prefHeight="25.0" prefWidth="66.0" />
+                  <TextField fx:id="eventTitleInput" layoutX="100.0" layoutY="270.0" prefHeight="25.0" prefWidth="61.0" />
+                  <TextField fx:id="eventDateInput" layoutX="173.0" layoutY="270.0" prefHeight="25.0" prefWidth="69.0" />
+                  <TextField fx:id="eventLocationInput" layoutX="259.0" layoutY="270.0" prefHeight="25.0" prefWidth="68.0" />
+                  <TextField fx:id="eventCapacityInput" layoutX="346.0" layoutY="270.0" prefHeight="25.0" prefWidth="69.0" />
+                  <ComboBox fx:id="eventTypeDropdown" layoutX="481.0" layoutY="270.0" prefHeight="25.0" prefWidth="86.0" />
+                  <TextField fx:id="eventExtraInfoInput" layoutX="580.0" layoutY="270.0" />
+                  <Button fx:id="addEventBtn" layoutX="195.0" layoutY="334.0" mnemonicParsing="false" text="Add Event" />
+                  <Button fx:id="cancelEventBtn" layoutX="362.0" layoutY="334.0" mnemonicParsing="false" text="Cancel Event" />
+                  <Text layoutX="33.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ID Input" />
+                  <Text layoutX="104.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Title Input" />
+                  <Text layoutX="179.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Date Input" />
+                  <Text layoutX="255.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Location Input" />
+                  <Text layoutX="345.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Capcity Input" />
+                  <Text layoutX="495.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Event Type" />
+                  <Text layoutX="640.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Extra Info" />
+                  <Button fx:id="updateEventBtn" layoutX="547.0" layoutY="334.0" mnemonicParsing="false" text="Update Event" />
+                  <TableView fx:id="eventRosterTable" layoutX="631.0" layoutY="391.0" prefHeight="166.0" prefWidth="257.0">
+                    <columns>
+                      <TableColumn fx:id="eventAttendees" prefWidth="256.0" text="Attendees" />
+                    </columns>
+                  </TableView>
+                  <Text layoutX="681.0" layoutY="372.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Click Event to View Roster" textAlignment="CENTER" wrappingWidth="156.046875" />
                     </children></AnchorPane>
             </content>
         </Tab>
