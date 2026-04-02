@@ -25,7 +25,15 @@ Features and Functionality
 -     Changes that were made will save on windows close (x button).
 -     On the next run, your changes should still be there.
 
+Running Tests
+-     Clone the repository and open it in IntelliJ IDEA.
+-     Navigate to the test file (BookingManagerTest.java).
+-     Run the test file by either:
+      - Right-clicking the file and selecting "Run".
+      - Clicking the green run arrow in the top-right corner in opened file.
+
 Compile and Run
--     Clone onto IntelliJ IDEA.
--     Requires JDK and JavaFX !!
--     Open Main.Java -> Click Run -> Pop-up w/GUI.
+-     Clone the repository and open it in IntelliJ IDEA.
+-     Ensure JDK and JavaFX are installed and properly configured.
+-     Open Main.java 
+-     Click "Run" to launch the GUI.
