@@ -17,6 +17,10 @@ Functionallity
 -     click on event to view all attendees and those waitlisted
 - Automatic waitlist promotion when spot opens up for next user
 
+Saving
+- Changes that were made will save on windows close (x button)
+- On the next run, your changes should still be there
+
 Compile and Run
     Clone onto IntelliJ IDEA
 -      Requires JDK and JavaFX !!
