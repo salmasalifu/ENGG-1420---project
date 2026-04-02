@@ -1,7 +1,7 @@
-# ENGG-1420---Campus Booking Event System - Phase 2
+# ENGG*1420 - Campus Booking Event System - Phase 2
 Complete System
 
-Features and Functionallity
+Features and Functionality
 - User Management
 -     Hierarchy: Student, Staff, Guest
 -     Create/remove new users
