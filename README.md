@@ -30,7 +30,7 @@ Running Tests
 -     Navigate to the test file (BookingManagerTest.java).
 -     Run the test file by either:
       - Right-clicking the file and selecting "Run".
-      - Clicking the green run arrow in the top-right corner in opened file.
+      - Clicking the green "Run" button in the top-right corner of opened test file.
 
 Compile and Run
 -     Clone the repository and open it in IntelliJ IDEA.
