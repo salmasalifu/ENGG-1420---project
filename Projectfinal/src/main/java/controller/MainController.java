@@ -72,6 +72,21 @@ public class MainController {
     @FXML private Button viewRosterBtn, removeRosterBtn, promoteBtn, demoteBtn;
     @FXML private Label waitlistMessageLabel;
 
+    // ==========================================
+    // GETTERS FOR FILE PERSISTENCE
+    // ==========================================
+    public UserManagement getUserManager() {
+        return userManager;
+    }
+
+    public ObservableList<Event> getEventList() {
+        return eventData;
+    }
+
+    public BookingManager getBookingManager() {
+        return bookingManager;
+    }
+    
     @FXML
     public void initialize() {
         // Populates the dropdown menus with valid categories.
