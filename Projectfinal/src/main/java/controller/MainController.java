@@ -2,6 +2,8 @@ package controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -21,38 +23,29 @@ public class MainController {
     // These lists keep the UI tables updated in real-time as data changes.
     private ObservableList<Event> eventData = FXCollections.observableArrayList();
     private ObservableList<User> userData = FXCollections.observableArrayList();
+    private ObservableList<Booking> userBookingsData = FXCollections.observableArrayList();
     private ObservableList<Booking> rosterData = FXCollections.observableArrayList();
-    private ObservableList<Booking> allUserBookingsData = FXCollections.observableArrayList();
-    private ObservableList<Booking> selectedUserBookingsData = FXCollections.observableArrayList();
-
-
 
     // ==========================================
     // TAB 1: USER MANAGEMENT
     // ==========================================
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, String> userIdColumn, userNameColumn, userEmailColumn, userTypeColumn;
-    @FXML private TableView<Booking> userViewBookingsTable;
     @FXML private TextField userIdInput, userNameInput, userEmailInput;
     @FXML private ComboBox<String> userTypeDropdown;
     @FXML private Button addUserBtn, removeUserBtn;
-    @FXML private TableColumn<Booking, String> userEventidColumn;
-    @FXML private TableColumn<Booking, BookingStatus> userBookingStatusColumn;
 
     // ==========================================
     // TAB 2: EVENT MANAGEMENT
     // ==========================================
     @FXML private TableView<Event> eventTable;
-   // @FXML private TableView<Event> eventRosterTable;
     @FXML private TableColumn<Event, String> idColumn, titleColumn, locationColumn, statusColumn, typeColumn, extraInfoColumn;
     @FXML private TableColumn<Event, LocalDateTime> dateColumn;
     @FXML private TableColumn<Event, Integer> capacityColumn;
     @FXML private TextField eventIdInput, eventTitleInput, eventDateInput, eventLocationInput, eventCapacityInput, eventExtraInfoInput;
+    @FXML private TextField searchEventInput; // The new search bar
     @FXML private ComboBox<String> eventTypeDropdown;
     @FXML private Button addEventBtn, cancelEventBtn, updateEventBtn;
-    @FXML private TableView<Booking> eventRosterTable;
-    @FXML private TableColumn<Booking, String> eventAttendees;
-
 
     // ==========================================
     // TAB 3: BOOKING MANAGEMENT
@@ -107,43 +100,65 @@ public class MainController {
         DataManager.loadInitialData(userManager, eventData, bookingManager);
         userData.setAll(userManager.getAllUsers());
 
-        // Attaches our data lists to the actual UI components.
+        // Attaches standard data lists to the UI components.
         userTable.setItems(userData);
-        eventTable.setItems(eventData);
+        userBookingsTable.setItems(userBookingsData);
         rosterTable.setItems(rosterData);
-        userBookingsTable.setItems(allUserBookingsData);
-        userViewBookingsTable.setItems(selectedUserBookingsData);
-        userEventidColumn.setCellValueFactory(new PropertyValueFactory<>("eventId"));
-        userBookingStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        // ==========================================
+        // LIVE SEARCH FILTERING FOR EVENTS
+        // ==========================================
+        FilteredList<Event> filteredEvents = new FilteredList<>(eventData, b -> true);
+
+        if (searchEventInput != null) {
+            searchEventInput.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredEvents.setPredicate(event -> {
+                    // If filter text is empty, display all events
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    String lowerCaseFilter = newValue.toLowerCase();
+
+                    // Search matches against Title, Location, or ID
+                    if (event.getTitle().toLowerCase().contains(lowerCaseFilter)) {
+                        return true;
+                    } else if (event.getLocation().toLowerCase().contains(lowerCaseFilter)) {
+                        return true;
+                    } else if (event.getID().toLowerCase().contains(lowerCaseFilter)) {
+                        return true;
+                    }
+                    return false; // Does not match
+                });
+            });
+        }
+
+        // Wraps the filtered list in a SortedList so column clicking to sort still works
+        SortedList<Event> sortedEvents = new SortedList<>(filteredEvents);
+        sortedEvents.comparatorProperty().bind(eventTable.comparatorProperty());
+        eventTable.setItems(sortedEvents);
+
+        // ==========================================
 
         updateRosterDropdown();
 
-        //listener detects when row (user) is clicked
-        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldUser, selectedUser) -> {
-            if (selectedUser != null) {//no bookings under user
-                showUserBookings(selectedUser);
-            } else {
-                userViewBookingsTable.getItems().clear();
+        // This listener detects when an event is clicked and fills the text fields for easy editing.
+        eventTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                eventIdInput.setText(newSelection.getID());
+                eventIdInput.setDisable(true); // Lock ID: You can't change the ID of an existing event
+
+                eventTitleInput.setText(newSelection.getTitle());
+                eventDateInput.setText(newSelection.getDateTime().toString());
+                eventLocationInput.setText(newSelection.getLocation());
+                eventCapacityInput.setText(String.valueOf(newSelection.getCapacity()));
+
+                eventTypeDropdown.setValue(newSelection.getEventtype());
+                eventTypeDropdown.setDisable(true); // Lock Type: Changing type requires a new object
+
+                eventExtraInfoInput.setText(newSelection.getExtrainfo());
             }
         });
-
-        //list event attendees
-        eventAttendees.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleStringProperty(
-                        cellData.getValue().getUserName() + " (" + cellData.getValue().getStatus() + ")"
-                )
-        );
-        eventTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldEvent, selectedEvent) -> {
-
-                    if (selectedEvent != null) {
-                        showEventRoster(selectedEvent);
-                    } else {
-                        eventRosterTable.getItems().clear();
-                    }
-                }
-        );
-
 
         // Configures what happens when each button is clicked.
         addUserBtn.setOnAction(e -> handleAddUser());
@@ -200,15 +215,8 @@ public class MainController {
             affectedEvents.forEach(eId -> bookingManager.promoteNextOnWaitlist(eId));
 
             rosterData.clear();
-            userViewBookingsTable.getItems().clear();
+            userBookingsData.clear();
         }
-    }
-    //filters out bookings table to only show bookings of selected user when clicked
-    private void showUserBookings(User user) {
-        List<Booking> bookings = bookingManager.getAllBookings().stream()
-                .filter(b -> b.getUserId().equals(user.getUserId()))
-                .collect(Collectors.toList());
-        selectedUserBookingsData.setAll(bookings); // only update the userViewBookingsTable
     }
 
     // ==========================================
@@ -292,17 +300,8 @@ public class MainController {
             rosterData.clear();
         }
     }
-    //filters users for event by confirmed and waitlisted
-    private void showEventRoster(Event event) {
-        List<Booking> bookings = bookingManager.getAllBookings().stream()
-                .filter(b -> b.getEventId().equals(event.getID()))
-                .filter(b -> b.getStatus() != BookingStatus.CANCELLED) //removes cancelled users
-                .collect(Collectors.toList());
 
-        eventRosterTable.setItems(FXCollections.observableArrayList(bookings));
-    }
-
-            // ==========================================
+    // ==========================================
     // BOOKING LOGIC
     // ==========================================
 
@@ -364,14 +363,13 @@ public class MainController {
             bookingMessageLabel.setText("Viewing history for " + u.getName());
         } else {
             bookingMessageLabel.setText("Error: User not found.");
-            //userBookingsData.clear();
-            userViewBookingsTable.getItems().clear();
+            userBookingsData.clear();
         }
     }
 
     // Refreshes the personal booking history for a specific user.
     private void refreshUserBookings(String userId) {
-        allUserBookingsData.setAll(bookingManager.getAllBookings().stream()
+        userBookingsData.setAll(bookingManager.getAllBookings().stream()
                 .filter(b -> b.getUserId().equals(userId))
                 .collect(Collectors.toList()));
     }
@@ -387,7 +385,6 @@ public class MainController {
             rosterData.setAll(bookingManager.getAllBookings().stream()
                     .filter(b -> b.getEventId().equals(eId))
                     .collect(Collectors.toList()));
-
         }
     }
 
