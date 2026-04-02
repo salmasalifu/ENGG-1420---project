@@ -23,18 +23,22 @@ public class MainController {
     // These lists keep the UI tables updated in real-time as data changes.
     private ObservableList<Event> eventData = FXCollections.observableArrayList();
     private ObservableList<User> userData = FXCollections.observableArrayList();
-    private ObservableList<Booking> userBookingsData = FXCollections.observableArrayList();
+    //private ObservableList<Booking> userBookingsData = FXCollections.observableArrayList();
     private ObservableList<Booking> rosterData = FXCollections.observableArrayList();
+    private ObservableList<Booking> allUserBookingsData = FXCollections.observableArrayList();
+    private ObservableList<Booking> selectedUserBookingsData = FXCollections.observableArrayList();
 
     // ==========================================
     // TAB 1: USER MANAGEMENT
     // ==========================================
     @FXML private TableView<User> userTable;
+    @FXML private TableView<Booking> userViewBookingsTable;
     @FXML private TableColumn<User, String> userIdColumn, userNameColumn, userEmailColumn, userTypeColumn;
     @FXML private TextField userIdInput, userNameInput, userEmailInput;
     @FXML private ComboBox<String> userTypeDropdown;
     @FXML private Button addUserBtn, removeUserBtn;
-
+    @FXML private TableColumn<Booking, String> userEventidColumn;
+    @FXML private TableColumn<Booking, BookingStatus> userBookingStatusColumn;
     // ==========================================
     // TAB 2: EVENT MANAGEMENT
     // ==========================================
@@ -46,6 +50,8 @@ public class MainController {
     @FXML private TextField searchEventInput; // The new search bar
     @FXML private ComboBox<String> eventTypeDropdown;
     @FXML private Button addEventBtn, cancelEventBtn, updateEventBtn;
+    @FXML private TableView<Booking> eventRosterTable;
+    @FXML private TableColumn<Booking, String> eventAttendees;
 
     // ==========================================
     // TAB 3: BOOKING MANAGEMENT
@@ -102,8 +108,12 @@ public class MainController {
 
         // Attaches standard data lists to the UI components.
         userTable.setItems(userData);
-        userBookingsTable.setItems(userBookingsData);
+       // userBookingsTable.setItems(userBookingsData);
         rosterTable.setItems(rosterData);
+        userBookingsTable.setItems(allUserBookingsData);
+        userViewBookingsTable.setItems(selectedUserBookingsData);
+        userEventidColumn.setCellValueFactory(new PropertyValueFactory<>("eventId"));
+        userBookingStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // ==========================================
         // LIVE SEARCH FILTERING FOR EVENTS
@@ -160,6 +170,32 @@ public class MainController {
             }
         });
 
+        //listener detects when row (user) is clicked
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldUser, selectedUser) -> {
+            if (selectedUser != null) {//no bookings under user
+                showUserBookings(selectedUser);
+            } else {
+                userViewBookingsTable.getItems().clear();
+            }
+        });
+
+        //list event attendees
+        eventAttendees.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getUserName() + " (" + cellData.getValue().getStatus() + ")"
+                )
+        );
+        eventTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldEvent, selectedEvent) -> {
+
+                    if (selectedEvent != null) {
+                        showEventRoster(selectedEvent);
+                    } else {
+                        eventRosterTable.getItems().clear();
+                    }
+                }
+        );
+
         // Configures what happens when each button is clicked.
         addUserBtn.setOnAction(e -> handleAddUser());
         if (removeUserBtn != null) removeUserBtn.setOnAction(e -> handleRemoveUser());
@@ -215,8 +251,14 @@ public class MainController {
             affectedEvents.forEach(eId -> bookingManager.promoteNextOnWaitlist(eId));
 
             rosterData.clear();
-            userBookingsData.clear();
-        }
+            userViewBookingsTable.getItems().clear();        }
+    }
+    //filters out bookings table to only show bookings of selected user when clicked
+    private void showUserBookings(User user) {
+        List<Booking> bookings = bookingManager.getAllBookings().stream()
+                .filter(b -> b.getUserId().equals(user.getUserId()))
+                .collect(Collectors.toList());
+        selectedUserBookingsData.setAll(bookings); // only update the userViewBookingsTable
     }
 
     // ==========================================
@@ -300,6 +342,15 @@ public class MainController {
             rosterData.clear();
         }
     }
+    //filters users for event by confirmed and waitlisted
+    private void showEventRoster(Event event) {
+        List<Booking> bookings = bookingManager.getAllBookings().stream()
+                .filter(b -> b.getEventId().equals(event.getID()))
+                .filter(b -> b.getStatus() != BookingStatus.CANCELLED) //removes cancelled users
+                .collect(Collectors.toList());
+
+        eventRosterTable.setItems(FXCollections.observableArrayList(bookings));
+    }
 
     // ==========================================
     // BOOKING LOGIC
@@ -363,13 +414,12 @@ public class MainController {
             bookingMessageLabel.setText("Viewing history for " + u.getName());
         } else {
             bookingMessageLabel.setText("Error: User not found.");
-            userBookingsData.clear();
-        }
+            allUserBookingsData.clear();        }
     }
 
     // Refreshes the personal booking history for a specific user.
     private void refreshUserBookings(String userId) {
-        userBookingsData.setAll(bookingManager.getAllBookings().stream()
+        allUserBookingsData.setAll(bookingManager.getAllBookings().stream()
                 .filter(b -> b.getUserId().equals(userId))
                 .collect(Collectors.toList()));
     }
