@@ -1,5 +1,5 @@
-# ENGG-1420---Campus Booking Event System - Phase 1
-Core Functionallity and Structure 
+# ENGG-1420---Campus Booking Event System - Phase 2
+Complete System
 
 Features
 - User Hierarchy
@@ -7,14 +7,17 @@ Features
 - Event Hierarchy
 -     Workshop, Seminar, Concert
 - Booking
--     Model with status, Workflow
+-     Confirm, Waitlist, Cancel
+- Search 
 
 Functionallity
-- User, Event, Bookink and Waitlist management
+- create/remove new users
+-     click on user to view all ongoing event bookings
+- Add/remove/update events
+-     click on event to view all attendees and those waitlisted
+- Automatic waitlist promotion when spot opens up for next user
 
 Compile and Run
     Clone onto IntelliJ IDEA
--      Must have JDK
-- open Main.Java
-- Click Run
-- GUI should appear
+-      Requires JDK and JavaFX !!
+- open Main.Java -> Click Run -> pop-up w/GUI
