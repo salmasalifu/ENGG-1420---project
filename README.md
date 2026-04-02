@@ -3,18 +3,18 @@ Complete System
 
 Features
 - User Hierarchy
--     Student, Staff Guest
+-     Student, Staff, Guest
 - Event Hierarchy
 -     Workshop, Seminar, Concert
 - Booking
 -     Confirm, Waitlist, Cancel
 - Search 
 
-Functionallity
-- create/remove new users
--     click on user to view all ongoing event bookings
+Functionality
+- Create/remove new users
+-     Click on user to view all ongoing event bookings
 - Add/remove/update events
--     click on event to view all attendees and those waitlisted
+-     Click on event to view all attendees and those waitlisted
 - Automatic waitlist promotion when spot opens up for next user
 
 Saving
@@ -22,6 +22,6 @@ Saving
 - On the next run, your changes should still be there
 
 Compile and Run
-    Clone onto IntelliJ IDEA
--      Requires JDK and JavaFX !!
-- open Main.Java -> Click Run -> pop-up w/GUI
+- Clone onto IntelliJ IDEA
+-     Requires JDK and JavaFX !!
+- Open Main.Java -> Click Run -> Pop-up w/GUI
