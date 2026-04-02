@@ -60,148 +60,212 @@ public class DataManager {
      * Creates/overwrites: users_saved.csv, events_saved.csv, bookings_saved.csv
      */
     public static void saveAllData(UserManagement userManager, List<Event> eventList, BookingManager bookingManager) {
-        // Save all users to file
-        try (FileWriter fw = new FileWriter(USERS_SAVED)) {
-            fw.write("ID,Name,Email,Type\n"); // Header row
-            for (User user : userManager.getAllUsers()) {
-                fw.write(user.getUserId() + "," + user.getName() + "," + user.getEmail() + "," + user.getUserType() + "\n");
-            }
-        } catch (IOException e) {
-            System.err.println("Error saving users: " + e.getMessage());
+    // Save Users
+    FileWriter userWriter = null;
+    try {
+        //Create a new file to write into:
+        userWriter = new FileWriter(USERS_SAVED);
+        userWriter.write("ID,Name,Email,Type\n");
+        //loop through all users and write their data to save
+        for (User user : userManager.getAllUsers()) {
+            userWriter.write(user.getUserId() + "," + user.getName() + "," + 
+                           user.getEmail() + "," + user.getUserType() + "\n");
         }
-
-        // Save all events to file
-        try (FileWriter fw = new FileWriter(EVENTS_SAVED)) {
-            fw.write("ID,Title,DateTime,Location,Capacity,Status,Type,Topic,Speaker,AgeRestriction\n");
-            for (Event event : eventList) {
-                // Extract subclass-specific fields (Workshop=topic, Seminar=speaker, Concert=ageRestriction)
-                String type = "", topic = "", speaker = "", ageRestriction = "";
-                if (event instanceof Workshop) {
-                    type = "Workshop";
-                    topic = ((Workshop) event).getEventtype();
-                } else if (event instanceof Seminar) {
-                    type = "Seminar";
-                    speaker = ((Seminar) event).getEventtype();
-                } else if (event instanceof Concert) {
-                    type = "Concert";
-                    ageRestriction = ((Concert) event).getEventtype();
-                }
-
-                fw.write(event.getID() + "," +
-                        event.getTitle() + "," +
-                        event.getDateTime().format(FORMATTER) + "," +
-                        event.getLocation() + "," +
-                        event.getCapacity() + "," +
-                        event.getStatus().toString() + "," +
-                        type + "," +
-                        topic + "," +
-                        speaker + "," +
-                        ageRestriction + "\n");
+    } catch (IOException e) {
+        System.err.println("Error saving users: " + e.getMessage());
+    } finally {
+        if (userWriter != null) {
+            try {
+                //close the file after writing
+                userWriter.close();
+            } catch (IOException e) {
+                System.err.println("Error closing users file: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("Error saving events: " + e.getMessage());
         }
-
-        // Save all bookings to file
-        try (FileWriter fw = new FileWriter(BOOKINGS_SAVED)) {
-            fw.write("BookingID,UserID,EventID,CreatedAt,Status\n");
-            for (Booking booking : bookingManager.getAllBookings()) {
-                fw.write(booking.getBookingId() + "," +
-                        booking.getUserId() + "," +
-                        booking.getEventId() + "," +
-                        booking.getCreatedAt().format(FORMATTER) + "," +
-                        booking.getStatus().toString() + "\n");
-            }
-        } catch (IOException e) {
-            System.err.println("Error saving bookings: " + e.getMessage());
-        }
-
-        System.out.println("Data saved.");
     }
+
+    // Save Events (similar logic to save users but with events)
+    FileWriter eventWriter = null;
+    try {
+        eventWriter = new FileWriter("events_saved.csv");
+        eventWriter.write("ID,Title,DateTime,Location,Capacity,Status,Type,Topic,Speaker,AgeRestriction\n");
+        for (Event event : eventList) {
+            String type = "", topic = "", speaker = "", ageRestriction = "";
+            if (event instanceof Workshop) {
+                type = "Workshop";
+                topic = ((Workshop) event).getEventtype();
+            } else if (event instanceof Seminar) {
+                type = "Seminar";
+                speaker = ((Seminar) event).getEventtype();
+            } else if (event instanceof Concert) {
+                type = "Concert";
+                ageRestriction = ((Concert) event).getEventtype();
+            }
+
+            eventWriter.write(event.getID() + "," +
+                    event.getTitle() + "," +
+                    event.getDateTime().format(FORMATTER) + "," +
+                    event.getLocation() + "," +
+                    event.getCapacity() + "," +
+                    event.getStatus().toString() + "," +
+                    type + "," +
+                    topic + "," +
+                    speaker + "," +
+                    ageRestriction + "\n");
+        }
+    } catch (IOException e) {
+        System.err.println("Error saving events: " + e.getMessage());
+    } finally {
+        if (eventWriter != null) {
+            try {
+                eventWriter.close();
+            } catch (IOException e) {
+                System.err.println("Error closing events file: " + e.getMessage());
+            }
+        }
+    }
+
+    // Save Bookings (similar logic to save users but with bookings)
+    FileWriter bookingWriter = null;
+    try {
+        bookingWriter = new FileWriter("bookings_saved.csv");
+        bookingWriter.write("BookingID,UserID,EventID,CreatedAt,Status\n");
+        for (Booking booking : bookingManager.getAllBookings()) {
+            bookingWriter.write(booking.getBookingId() + "," +
+                    booking.getUserId() + "," +
+                    booking.getEventId() + "," +
+                    booking.getCreatedAt().format(FORMATTER) + "," +
+                    booking.getStatus().toString() + "\n");
+        }
+    } catch (IOException e) {
+        System.err.println("Error saving bookings: " + e.getMessage());
+    } finally {
+        if (bookingWriter != null) {
+            try {
+                bookingWriter.close();
+            } catch (IOException e) {
+                System.err.println("Error closing bookings file: " + e.getMessage());
+            }
+        }
+    }
+
+    System.out.println("Data saved.");
+}
 
     /**
      * File Persistance helper method: Loads users from external saved file.
      * Same parsing logic as loadUsers(), but reads from disk instead of bundled resources.
      */
     private static void loadUsersFromPath(UserManagement userManager, File file) {
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            br.readLine(); // Skip header
-            while ((line = br.readLine()) != null) {
-                String[] data = line.split(",", -1);
-                if (data.length >= 4) {
-                    userManager.createUser(data[0].trim(), data[1].trim(), data[2].trim(), data[3].trim());
-                }
+    BufferedReader br = null;
+    try {
+        //Open the saved file and read from it 
+        br = new BufferedReader(new FileReader(file));
+        String line;
+        br.readLine(); // Skip header
+        while ((line = br.readLine()) != null) {
+            //while reading exisitng data, split it into indexes seperated by commas but also including blanks into an array repersenting that users data
+            String[] data = line.split(",", -1);
+            if (data.length >= 4) {
+                //create a copy of that data as the logic for loading it
+                userManager.createUser(data[0].trim(), data[1].trim(), data[2].trim(), data[3].trim());
             }
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+        }
+    } catch (Exception e) {
+        System.err.println("Error loading users: " + e.getMessage());
+    } finally {
+        if (br != null) {
+            try {
+                br.close();
+            } catch (IOException e) {
+                System.err.println("Error closing users file: " + e.getMessage());
+            }
         }
     }
+}
 
-    /**
+/**
      * File Persistance helper method: Loads events from external saved file.
      * Same parsing logic as loadEvents(), but reads from disk instead of bundled resources.
      */
-    private static void loadEventsFromPath(List<Event> eventList, File file) {
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            br.readLine(); // Skip header
-            while ((line = br.readLine()) != null) {
-                String[] d = line.split(",", -1);
-                if (d.length < 10) continue;
+private static void loadEventsFromPath(List<Event> eventList, File file) {
+    BufferedReader br = null;
+    try {
+        br = new BufferedReader(new FileReader(file));
+        String line;
+        br.readLine(); // Skip header
+        while ((line = br.readLine()) != null) {
+            String[] d = line.split(",", -1);
+            if (d.length < 10) continue;
 
-                LocalDateTime dt = LocalDateTime.parse(d[2].trim(), FORMATTER);
-                int cap = Integer.parseInt(d[4].trim());
-                Event newEvent = null;
+            LocalDateTime dt = LocalDateTime.parse(d[2].trim(), FORMATTER);
+            int cap = Integer.parseInt(d[4].trim());
+            Event newEvent = null;
 
-                // Create the correct event subclass based on Type column
-                if (d[6].trim().equalsIgnoreCase("Workshop"))
-                    newEvent = new Workshop(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[7].trim());
-                else if (d[6].trim().equalsIgnoreCase("Seminar"))
-                    newEvent = new Seminar(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[8].trim());
-                else if (d[6].trim().equalsIgnoreCase("Concert"))
-                    newEvent = new Concert(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[9].trim());
+            if (d[6].trim().equalsIgnoreCase("Workshop")) 
+                newEvent = new Workshop(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[7].trim());
+            else if (d[6].trim().equalsIgnoreCase("Seminar")) 
+                newEvent = new Seminar(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[8].trim());
+            else if (d[6].trim().equalsIgnoreCase("Concert")) 
+                newEvent = new Concert(d[0].trim(), d[1].trim(), dt, d[3].trim(), cap, d[9].trim());
 
-                if (newEvent != null) {
-                    if (d[5].trim().equalsIgnoreCase("Cancelled"))
-                        newEvent.setStatus(EventStatus.Cancelled);
-                    eventList.add(newEvent);
-                }
+            if (newEvent != null) {
+                if (d[5].trim().equalsIgnoreCase("Cancelled")) 
+                    newEvent.setStatus(EventStatus.Cancelled);
+                eventList.add(newEvent);
             }
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+        }
+    } catch (Exception e) {
+        System.err.println("Error loading events: " + e.getMessage());
+    } finally {
+        if (br != null) {
+            try {
+                br.close();
+            } catch (IOException e) {
+                System.err.println("Error closing events file: " + e.getMessage());
+            }
         }
     }
+}
 
-    /**
+/**
      * File Persistance helper method: Loads bookings from external saved file.
      * Same parsing logic as loadBookings(), but reads from disk instead of bundled resources.
      * Performs lookups to match UserIDs/EventIDs with actual names/titles.
      */
-    private static void loadBookingsFromPath(BookingManager bookingManager, UserManagement userManager, List<Event> eventList, File file) {
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            br.readLine(); // Skip header
-            while ((line = br.readLine()) != null) {
-                String[] d = line.split(",", -1);
-                if (d.length < 5) continue;
+private static void loadBookingsFromPath(BookingManager bookingManager, UserManagement userManager, List<Event> eventList, File file) {
+    BufferedReader br = null;
+    try {
+        br = new BufferedReader(new FileReader(file));
+        String line;
+        br.readLine(); // Skip header
+        while ((line = br.readLine()) != null) {
+            String[] d = line.split(",", -1);
+            if (d.length < 5) continue;
 
-                // Look up user and event to display names instead of just IDs
-                User u = userManager.getUser(d[1].trim());
-                Event ev = eventList.stream().filter(e -> e.getID().equals(d[2].trim())).findFirst().orElse(null);
+            User u = userManager.getUser(d[1].trim());
+            Event ev = eventList.stream().filter(e -> e.getID().equals(d[2].trim())).findFirst().orElse(null);
 
-                Booking b = new Booking(d[0].trim(), d[1].trim(),
-                        u != null ? u.getName() : "Unknown",
-                        d[2].trim(),
-                        ev != null ? ev.getTitle() : "Unknown",
-                        BookingStatus.valueOf(d[4].trim().toUpperCase()));
-                b.setCreatedAt(LocalDateTime.parse(d[3].trim(), FORMATTER));
-                bookingManager.getAllBookings().add(b);
+            Booking b = new Booking(d[0].trim(), d[1].trim(),
+                    u != null ? u.getName() : "Unknown",
+                    d[2].trim(),
+                    ev != null ? ev.getTitle() : "Unknown",
+                    BookingStatus.valueOf(d[4].trim().toUpperCase()));
+            b.setCreatedAt(LocalDateTime.parse(d[3].trim(), FORMATTER));
+            bookingManager.getAllBookings().add(b);
+        }
+    } catch (Exception e) {
+        System.err.println("Error loading bookings: " + e.getMessage());
+    } finally {
+        if (br != null) {
+            try {
+                br.close();
+            } catch (IOException e) {
+                System.err.println("Error closing bookings file: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
         }
     }
+}
 
     /**
      * loadUsers method reads users from bundled starter CSV.
