@@ -2,6 +2,7 @@ module com.example.projectfinal {
     // Required JavaFX Modules
     requires javafx.controls;
     requires javafx.fxml;
+    requires org.junit.jupiter.api;
 
     // Optional: Include this if you are using the BootstrapFX library
     requires org.kordamp.bootstrapfx.core;
